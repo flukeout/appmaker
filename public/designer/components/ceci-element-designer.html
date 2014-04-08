@@ -7,38 +7,65 @@
         top: 0;
       }
 
+      :host:hover {
+        box-shadow: 0 0 0 2px rgba(255,125,0,0.2);
+      }
+
       :host .handle {
         position: absolute;
         right: 0;
         top: 0;
-        opacity: .6;
         border-radius: 2px;
         background-color: white;
         border: solid 1px #BBB;
-        width: 16px;
-        height: 16px;
-        padding: 3px;
+        width: 22px;
+        height: 22px;
         cursor: move;
-        /* TODO: Move this to designer-specific folder */
-        /* https://github.com/mozilla-appmaker/appmaker/issues/685 */
         background-image: url('/designer/images/move.png');
         background-repeat: no-repeat;
-        background-position: 5px 5px;
+        background-position: center;
+        background-size: 12px;
         margin: 3px;
         z-index: 9999;
         visibility: hidden;
         display: block;
       }
 
-      :host:hover .handle {
+      :host .delete-component
+       {
+        background-size: 10px;
+        position: absolute;
+        z-index: 110;
+        height: 22px;
+        width: 22px;
+        background-position: center;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        background-size: 12px;
+        cursor: pointer;
+        border-radius: 2px;
+        background-color: white;
+        border: solid 1px #BBB;
+        top: 3px;
+        right: 30px;
+        cursor: pointer;
+        visibility: hidden;
+        background-image: url('/designer/images/delete.png');
+      }
+
+
+      :host:hover > .handle {
         visibility: visible;
       }
 
-      :host .handle:hover {
-        opacity: 1;
+      :host:hover > .delete-component {
+        visibility: visible;
       }
+
     </style>
     <content></content>
+
+    <div on-click="{{deleteComponent}}" class="delete-component"></div>
 
     <ceci-listen-vis></ceci-listen-vis>
     <ceci-channel-menu channelType="listen"></ceci-channel-menu>
@@ -57,6 +84,11 @@
           this.dispatchEvent(new CustomEvent('broadcastFired', {name: name, bubbles: true, detail: broadcastDetails}));
         }
       },
+      deleteComponent : function(e){
+        this.parentNode.removeChild(this);
+        var event = new CustomEvent("component-deleted");
+        window.dispatchEvent(event);
+      },
       log: function(eventChannel, eventType, eventName) {
         var message = {};
         message.component = this.tagName.substr(5);
@@ -66,9 +98,10 @@
         this.dispatchEvent(new CustomEvent('log', {bubbles: true, detail: message}));
       },
       enteredView: function() {
-        var handle = document.createElement('div');
-        handle.className = 'handle';
+        var handle = document.createElement("div");
+        handle.classList.add("handle");
         this.appendChild(handle);
+
         this.super();
       }
     });

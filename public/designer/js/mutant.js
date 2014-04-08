@@ -36,10 +36,11 @@ define(
     window.addEventListener('CeciElementAdded', function(e){
       var element = e.detail;
       element.addEventListener('click', function(e){
+        e.stopPropagation();
         selectElement(element);
       });
 
-      selectElement(element);
+      // selectElement(element);
     }, false);
   }
 );
