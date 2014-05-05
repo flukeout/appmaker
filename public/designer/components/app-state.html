@@ -1,0 +1,56 @@
+<polymer-element name="app-state" attributes="">
+  <template>
+    <content></content>
+  </template>
+  <script>
+    Polymer('app-state', {
+      states : [],
+      ceciApp : "",
+      attached: function (data, extra) {
+        var that = this;
+        var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+
+        // window.addEventListener("CeciAppReady", function(e){
+   //        ceciApp = document.querySelector("ceci-app");
+   //        console.log(ceciApp);
+   //        var observer = new MutationObserver(function(mutations) {
+   //          mutations.forEach(function(mutation) {
+   //            that.mutationMade();
+   //          });
+   //        });
+   //        var config = { attributes: true, childList: true, characterData: true, subtree: true };
+   //        observer.observe(ceciApp,config);
+   //      });
+
+      },
+      mutationMade : function(){
+
+        window.clearTimeout(mutationTimeout);
+
+        var mutationTimeout = window.setTimeout(function(){
+          console.log("mutation made");
+        },1000);
+
+
+        //starts the timer for when teh mutation happened
+      },
+
+      startTimer : function(){
+        //starts the timer for when teh mutation happened
+
+      },
+
+      saveState : function(){
+
+      }
+
+
+    });
+
+  </script>
+</polymer-element>
+
+
+
+
+
