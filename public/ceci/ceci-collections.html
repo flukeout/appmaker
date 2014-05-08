@@ -10,6 +10,12 @@
   <script>
     // The global collection data intended for component authors to publish to.
     window.collections = {};
+    window.collections.cats = {};
+    window.collections.cats.fields = {
+      "name" : { "kind" : "text"},
+      "age" : { "kind" : "number"}
+    }
+
     // The main observer for collections.
     var collectionsObserverObject;
     // This is meant to be the raw data that gets saved in the element.
@@ -132,6 +138,11 @@
         // This function ensures new or removed collections get observers added or removed.
         // Example collections.contacts = {}; or collections.contacts = contacts;
         function collectionsObserver(added, removed, changed, getOldValueFn) {
+
+          // Need to emit this if a collection was added / changed / removed etc.
+          var customEvent = new CustomEvent("ceci-data-change");
+          document.dispatchEvent(customEvent);
+
           Object.keys(added).forEach(function(collection) {
             savedData[collection] = added[collection] || {};
             collectionElement.textContent = JSON.stringify(savedData);
@@ -247,6 +258,7 @@
 
         // Set up observers for new collections being added.
         function setupCollectionObserver(collection) {
+
           var observer;
           // On and off event functions live here, this ends up being:
           // collections.contacts.on/off

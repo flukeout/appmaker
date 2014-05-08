@@ -50,18 +50,52 @@
         background: #fff;
       }
     </style>
-    <select hidden?="{{ collections.length == 0 }}" id="collectionSelect" on-change="{{collectionSelectChanged}}" value="{{currentCollectionIndex}}">
-      <template repeat="{{collection, index in collections}}">
-        <option value="{{index}}">{{collection.name}}</option>
+
+    <div>
+        <select hidden?="{{ collections.length == 0 }}" id="collectionSelect" on-change="{{collectionSelectChanged}}" value="{{currentCollectionIndex}}">
+
+          <template repeat="{{collection, index in collections}}">
+            <option value="{{index}}">{{collection.name}}</option>
+          </template>
+        </select>
+        <button on-click="{{removeCollection}}" hidden?="{{ currentCollection == undefined }}">-</button>
+        <button on-click="{{addCollection}}">+</button>
+
+    </div>
+
+    <div>
+
+      <template repeat="{{collectionName in currentCol | getKeys}}">
+        <h3>Collection of</h3>
+        <input type="text" value="{{collectionName}}" />
+        <button on-click="{{removeCollection}}" data-collection="{{collectionName}}">-</button>
+
+        <template bind="{{currentCol[collectionName] as thisCollection}}">
+
+          <h3>Properties</h3>
+          <template repeat="{{fieldName in thisCollection.fields | getKeys}}">
+            <div>
+              <input type="text" value="{{fieldName}}" />
+                <select value="{{thisCollection.fields[fieldName].kind}}">
+                  <option value="text">Text</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="object">Object</option>
+                  <option value="array">Array</option>
+                </select>
+              </div>
+          </template>
+
+        </template>
+
       </template>
-    </select>
-    <button on-click="{{removeCollection}}" hidden?="{{ currentCollection == undefined }}">-</button>
-    <button on-click="{{addCollection}}">+</button>
-    <div hidden?="{{ currentCollection == undefined }}">
+
+      <!--
       <h3>Name</h3>
       <template if="{{currentCollection != undefined}}" bind="{{currentCollection}}">
         <input type="text" value="{{name}}">
         <h3>Keys</h3>
+
         <ul style="list-style: none;">
           <template repeat="{{item, index in model}}">
             <li>
@@ -79,7 +113,7 @@
         </ul>
         <button on-click="{{addKey}}">+</button>
 
-        <table id="data-table">
+        <table hidden="true" id="data-table">
           <tr>
             <template repeat="{{item in model}}">
               <td>{{item.name}}</td>
@@ -103,6 +137,7 @@
         </table>
       </template>
     </div>
+      -->
   </template>
   <script>
     window.CeciData = window.CeciData || {};
@@ -125,9 +160,35 @@
     Polymer('data-manager', {
       currentCollection: undefined,
       currentCollectionIndex: 0,
+      getKeys : function(o){
+        if(o){
+          return Object.keys(o);
+        }
+      },
       ready: function () {
         this.collections = window.CeciData.collections;
         this.currentCollection = this.collections[this.currentCollectionIndex];
+
+        var that = this;
+
+        document.addEventListener("ceci-data-change",function(){
+          console.log("Data Manager Noticed Something");
+          that.updateView();
+        });
+
+
+
+      },
+      attached : function(){
+        this.updateView();
+      },
+      updateView : function(){
+
+        this.currentCol = window.collections;
+        // this.dataKeys = Object.keys(window.collections);
+        // console.log(this.dataKeys);
+
+        // this.currentCol = ["hi"];
       },
       addCollection: function () {
         this.collections.push({
@@ -141,14 +202,20 @@
           this.currentCollection = this.collections[this.currentCollectionIndex];
         });
       },
-      removeCollection: function () {
-        this.collections.splice(this.currentCollectionIndex, 1);
+      removeCollection: function (event,detail,sender) {
+        var collection = sender.getAttribute("data-collection");
+        console.log(window.collections);
+        delete window.collections[collection];
+        console.log(window.collections);
+        this.currentCol = window.collections;
 
-        this.async(function () {
-          // selectedIndex will automatically jump to something sane. Use it for index.
-          this.currentCollectionIndex = this.$.collectionSelect.selectedIndex;
-          this.currentCollection = this.collections[this.currentCollectionIndex];
-        });
+        // this.collections.splice(this.currentCollectionIndex, 1);
+        //
+        // this.async(function () {
+        //   // selectedIndex will automatically jump to something sane. Use it for index.
+        //   this.currentCollectionIndex = this.$.collectionSelect.selectedIndex;
+        //   this.currentCollection = this.collections[this.currentCollectionIndex];
+        // });
       },
       addKey: function () {
         this.currentCollection.model.push({name: 'Item ' + (this.currentCollection.model.length + 1), type: 'text'});
