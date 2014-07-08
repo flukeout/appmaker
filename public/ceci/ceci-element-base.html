@@ -86,7 +86,7 @@
           if (listenerDefinition['default'] !== true) {
             channel = listenerDefinition['default'];
           }
-        defaultListeners.push({name: listenerName, channel: "a" });
+          defaultListeners.push({name: listenerName, channel: "a" });
         }
       });
 
@@ -106,7 +106,7 @@
           if (broadcastDefinition['default'] !== true) {
             channel = broadcastDefinition['default'];
           }
-        defaultBroadcasts.push({name: broadcastName, channel: "a" });
+          defaultBroadcasts.push({name: broadcastName, channel: "a" });
         }
       });
 
@@ -132,18 +132,6 @@
           return;
         }
 
-        this.applyDefaults = function () {}; //blank!
-
-        this.ceci.thumbnail = this.ceciDefinition.thumbnail;
-        this.ceci.tags = this.ceciDefinition.tags || [];
-        this.ceci.attributes = this.ceciDefinition.attributes || {};
-        this.ceci.name = this.gettext(this.localName) || this.ceciDefinition.name || this.localName;
-        this.localized();
-        this.fire('CeciElementReady');
-      },
-      attached : function(){
-
-        var that = this;
         var attributeResults = processAttributes(this.ceci.editables, this.ceciDefinition.attributes || {});
 
         Object.keys(attributeResults.attributeListeners).forEach(function (attributeName) {
@@ -157,23 +145,30 @@
           attributeResults.listeners[listenerDefinitionName] = that.ceciDefinition.listeners[listenerDefinitionName];
         });
 
-        var defaultListeners = processListeners(this.ceci.listeners, attributeResults.listeners);
-        var defaultBroadcasts = processBroadcasts(this.ceci.broadcasts, this.ceciDefinition.broadcasts);
+        this.ceci.thumbnail = this.ceciDefinition.thumbnail;
+        this.ceci.tags = this.ceciDefinition.tags || [];
+        this.ceci.attributes = this.ceciDefinition.attributes || {};
+        this.ceci.name = this.gettext(this.localName) || this.ceciDefinition.name || this.localName;
 
+        this.ceci._defaultListeners = processListeners(this.ceci.listeners, attributeResults.listeners);
+        this.ceci._defaultBroadcasts = processBroadcasts(this.ceci.broadcasts, this.ceciDefinition.broadcasts);
+
+        this.localized();
+        this.fire('CeciElementReady');
+      },
+      attached : function() {
+        var that = this;
         var map = document.querySelector("ceci-channel-map");
-        var useChannel;
 
-        defaultListeners.forEach(function (d) {
+        this.ceci._defaultListeners.forEach(function (d) {
           if (!that.querySelector('ceci-listen[for="' + d.name + '"]')) {
-            useChannel = map.freeListenerChannel;
-            that.setListener(d.name, useChannel);
+            that.setListener(d.name, map.freeListenerChannel);
           }
         });
 
-        defaultBroadcasts.forEach(function (d) {
+        this.ceci._defaultBroadcasts.forEach(function (d) {
           if (!that.querySelector('ceci-broadcast[from="' + d.name + '"]')) {
-            useChannel = map.freeBroadcastChannel;
-            that.setBroadcast(d.name, useChannel);
+            that.setBroadcast(d.name, map.freeListenerChannel);
           }
         });
       },
