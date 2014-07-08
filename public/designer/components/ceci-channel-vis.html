@@ -7,6 +7,8 @@
     Polymer('ceci-channel-vis', {
       attached: function () {
         var that = this;
+        var channelsEl = document.querySelector("ceci-channels");
+        this.channels = channelsEl.channels;
         window.addEventListener('channelUpdated', function(data){
           that.updateChannelVis();
         });
