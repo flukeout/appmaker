@@ -126,47 +126,117 @@
 
     Polymer('ceci-element-base', {
       eventListeners : [],
-      sounds : {},
-      playSound : function(sound,volume){
-        if(this.sounds[sound] && this.ctx){
+      sounds : {}, // should keep a reference to the object that plays it, not just the buffer yeah?
+      _sounds : {},
+      audiotype : "",
+      playingSound : {},
+      pauseSound : function(sound){
+        // if(this.playingSound[sound]) {
+          // this.playingSound[sound].pause();
+        // }
+      },
+      playSound : function(soundName,volume){
+        console.log(this._sounds);
+
+        var that = this;
+
+        if(this._sounds[soundName] && this.ctx){
+
           if(isNaN(parseFloat(volume))) {
             volume = 1;
           } else {
             volume = parseFloat(volume);
           }
+
           if(volume > 1) { volume = 1; }
           if(volume < 0) { volume = 0; }
-          var gain = this.ctx.createGain();
-          gain.gain.value = volume;
-          gain.connect(this.ctx.destination);
-          var src = this.ctx.createBufferSource();
-          src.buffer = this.sounds[sound];
-          src.loop = false;
-          src.connect(gain);
-          src.start(0);
+
+          var sound = this._sounds[soundName];
+          sound.gainNode.gain.value = volume;
+
+          if(sound.type === "element") {
+            if(sound.status === "playing") {
+              sound.el.pause();
+              sound.el.currentTime = 0;
+            }
+            sound.el.play();
+          }
+
+          if(sound.type === "buffer"){
+            sound.source = that.ctx.createBufferSource();
+            sound.source.connect(that._sounds[soundName].gainNode);
+            sound.source.buffer = that._sounds[soundName].buffer;
+            sound.source.loop = false;
+            sound.source.start(0);
+
+            sound.source.addEventListener("ended",function(){
+              console.log("buffer sound stopped");
+              sound.status = "stopped";
+            });
+          }
+
+          // Change status to playing
+          sound.status = "playing";
+
         }
       },
       loadSound : function(soundName,soundPath){
+        var that = this;
+
         if(this.ctx){
-          var that = this;
+
           var xhr = new XMLHttpRequest();
           xhr.open("GET", this.resolvePath(soundPath), true);
+
           xhr.responseType = "arraybuffer";
+          var that = this;
+
+          that._sounds[soundName] = {};
+          that._sounds[soundName].name  = soundName;
+          that._sounds[soundName].path  = soundPath;
+          that._sounds[soundName].status  = "stopped";
+          that._sounds[soundName].gainNode  = that.ctx.createGain();
+          that._sounds[soundName].gainNode.connect(that.ctx.destination);
+
+          //If not, make it into an audio element source
+          xhr.onerror = function(e) {
+            var audioEl = document.createElement("audio");
+            audioEl.src = soundPath;
+            that._sounds[soundName].el = audioEl;
+            that._sounds[soundName].source = that.ctx.createMediaElementSource(audioEl);
+            that._sounds[soundName].source.connect(that._sounds[soundName].gainNode);
+            that._sounds[soundName].type  = "element";
+
+            console.log(that._sounds[soundName].el);
+            that._sounds[soundName].el.addEventListener("ended",function(){
+
+              console.log("element sound stopped");
+              that._sounds[soundName].status = "stopped";
+            });
+
+          };
+
+          //If it's able to load the URL, make it into a buffer source
           xhr.onload = function () {
             if (xhr.response.byteLength) {
               that.ctx.decodeAudioData(xhr.response, function(data) {
-                that.sounds[soundName] = data;
+                that._sounds[soundName].type = "buffer";
+                that._sounds[soundName].buffer  = data;
               },
               function (e) {
                 console.error('Error decoding the audio buffer.', arguments);
               });
             }
+
           };
+
           xhr.send();
         }
+
+
       },
       ready: function () {
-        this.sounds = {};
+        this._sounds = {};
         this.eventListeners = [];
         if (this.ceci) return;
         this.addedCustomListeners = false;
