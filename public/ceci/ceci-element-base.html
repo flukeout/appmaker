@@ -1,6 +1,7 @@
 <polymer-element name="ceci-element-base">
   <template>
     <content></content>
+    <audio></audio>
   </template>
   <script>
     var L10n = {
@@ -136,7 +137,7 @@
         // }
       },
       playSound : function(soundName,volume){
-        console.log(this._sounds);
+        // console.log(this._sounds);
 
         var that = this;
 
@@ -151,10 +152,15 @@
           if(volume > 1) { volume = 1; }
           if(volume < 0) { volume = 0; }
 
+
+
           var sound = this._sounds[soundName];
+          console.log(sound);
+
           sound.gainNode.gain.value = volume;
 
           if(sound.type === "element") {
+            console.log(sound.el);
             if(sound.status === "playing") {
               sound.el.pause();
               sound.el.currentTime = 0;
@@ -163,16 +169,22 @@
           }
 
           if(sound.type === "buffer"){
+            console.log("playing buffer sound");
             sound.source = that.ctx.createBufferSource();
+
+            sound.source.addEventListener("ended",function(){
+              console.log("Stopped");
+              sound.status = "stopped";
+            });
+
+            sound.source.onended = function(){};
+
             sound.source.connect(that._sounds[soundName].gainNode);
             sound.source.buffer = that._sounds[soundName].buffer;
             sound.source.loop = false;
             sound.source.start(0);
 
-            sound.source.addEventListener("ended",function(){
-              console.log("buffer sound stopped");
-              sound.status = "stopped";
-            });
+
           }
 
           // Change status to playing
@@ -198,18 +210,27 @@
           that._sounds[soundName].gainNode  = that.ctx.createGain();
           that._sounds[soundName].gainNode.connect(that.ctx.destination);
 
+          var audioEl = that.shadowRoot.querySelector("audio");
+          console.log("gonna add this guy");
+          console.log(audioEl);
+          var context = new window.AudioContext;
+          context.createMediaElementSource(audioEl);
+
+
           //If not, make it into an audio element source
           xhr.onerror = function(e) {
-            var audioEl = document.createElement("audio");
-            audioEl.src = soundPath;
-            that._sounds[soundName].el = audioEl;
-            that._sounds[soundName].source = that.ctx.createMediaElementSource(audioEl);
+
+            // var audioEl = new Audio();
+
+            // audioEl.src = soundPath;
+            // that._sounds[soundName].el = audioEl;
+            // that._sounds[soundName].source = that.ctx.createMediaElementSource(audioEl);
+
             that._sounds[soundName].source.connect(that._sounds[soundName].gainNode);
             that._sounds[soundName].type  = "element";
 
-            console.log(that._sounds[soundName].el);
-            that._sounds[soundName].el.addEventListener("ended",function(){
 
+            that._sounds[soundName].el.addEventListener("ended",function(){
               console.log("element sound stopped");
               that._sounds[soundName].status = "stopped";
             });

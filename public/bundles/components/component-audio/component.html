@@ -2,7 +2,7 @@
  extends="ceci-element"
   label="dogs.wav"
   volume=".5"
-  source="http://soundjax.com/reddo/21812%5Edog_bark_x.mp3"
+  source="bark.mp3"
   tapecolor="#2181cb"
   speed="1.0">
   <ceci-definition>
@@ -70,7 +70,7 @@
         <div class="circle right"></div>
       </div>
     </div>
-    <audio id="sound" src="sounds/snare.mp3" preload="auto"></audio>
+    <audio id="sound" src="" preload="auto"></audio>
     <shadow></shadow>
   </template>
   <script>
@@ -81,32 +81,37 @@
         this.$.sound.addEventListener("ended",function(){
           that.stopsound();
         });
+        this.loadSound("clip",this.source);
+        console.log(this.source);
       },
       state : "stopped",
       stopsound : function(){
-        this.$.sound.pause();
-        this.$.sound.currentTime = 0;
-        this.$.wrapper.classList.remove("playing");
-        this.state = "stopped";
+
+        // this.$.sound.pause();
+        // this.$.sound.currentTime = 0;
+        // this.$.wrapper.classList.remove("playing");
+        // this.state = "stopped";
       },
       play: function() {
-        var readyState = this.$.sound.readyState;
-        if(readyState != 0) {
-          this.$.wrapper.classList.add("playing");
-          if(this.state == "paused") {
-            this.$.sound.play();
-            this.state = "playing";
-          } else {
-            this.$.sound.pause();
-            this.$.sound.currentTime = 0;
-            this.$.sound.play();
-            this.state = "playing";
-          }
-        } else {
-          this.$.wrapper.classList.remove("cantplay");
-          this.$.wrapper.offsetWidth = this.$.wrapper.offsetWidth;
-          this.$.wrapper.classList.add("cantplay");
-        }
+        this.playSound("clip",.4);
+
+        // var readyState = this.$.sound.readyState;
+        // if(readyState != 0) {
+        //   this.$.wrapper.classList.add("playing");
+        //   if(this.state == "paused") {
+        //     this.$.sound.play();
+        //     this.state = "playing";
+        //   } else {
+        //     this.$.sound.pause();
+        //     this.$.sound.currentTime = 0;
+        //     this.$.sound.play();
+        //     this.state = "playing";
+        //   }
+        // } else {
+        //   this.$.wrapper.classList.remove("cantplay");
+        //   this.$.wrapper.offsetWidth = this.$.wrapper.offsetWidth;
+        //   this.$.wrapper.classList.add("cantplay");
+        // }
       },
       pause : function(){
         this.$.wrapper.classList.remove("playing");
