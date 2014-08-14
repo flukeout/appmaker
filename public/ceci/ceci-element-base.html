@@ -210,21 +210,24 @@
           that._sounds[soundName].gainNode  = that.ctx.createGain();
           that._sounds[soundName].gainNode.connect(that.ctx.destination);
 
-          var audioEl = that.shadowRoot.querySelector("audio");
-          console.log("gonna add this guy");
-          console.log(audioEl);
-          var context = new window.AudioContext;
-          context.createMediaElementSource(audioEl);
+          // var audioEl = that.shadowRoot.querySelector("audio");
+          // console.log("gonna add this guy");
+          // console.log(audioEl);
+          // var context = new window.AudioContext;
+          // context.createMediaElementSource(audioEl);
 
 
           //If not, make it into an audio element source
           xhr.onerror = function(e) {
 
-            // var audioEl = new Audio();
+            var audioEl = new Audio();
 
             // audioEl.src = soundPath;
-            // that._sounds[soundName].el = audioEl;
-            // that._sounds[soundName].source = that.ctx.createMediaElementSource(audioEl);
+            audioEl.src = "/bark.mp3";
+            that._sounds[soundName].el = audioEl;
+            console.log("Before");
+            that._sounds[soundName].source = that.ctx.createMediaElementSource(audioEl);
+            console.log("After");
 
             that._sounds[soundName].source.connect(that._sounds[soundName].gainNode);
             that._sounds[soundName].type  = "element";
